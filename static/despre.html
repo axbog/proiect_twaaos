@@ -12,13 +12,11 @@
 <nav class="navbar navbar-expand navbar-dark bg-dark shadow-sm">
     <div class="container">
         
-        
         <div class="d-flex align-items-center me-auto">
             <a class="nav-link text-white me-3" href="/acasa.html">Acasă</a>
             <a class="nav-link text-white me-3" href="/sarcini.html">Sarcini</a>
             <a class="nav-link text-white fw-bold" href="/despre.html">Despre mine</a>
         </div>
-        
         <div class="ms-auto">
             <button id="btn-deconectare" class="btn btn-danger btn-sm fw-bold" onclick="deconecteaza()">Deconectare</button>
         </div>
@@ -29,7 +27,20 @@
     <div class="card border-0 shadow-sm p-5" style="border-radius: 12px;">
         <h2 class="text-primary fw-bold mb-4">Despre Mine</h2>
         
-        <p class="fs-5">Salut! Numele meu este <strong>Bogdan Cristian Axinte</strong>.</p>
+        <div class="mb-4">
+            <h5 class="fw-bold text-dark">Informații Academice</h5>
+            <ul class="list-unstyled">
+                <li><strong>Nume:</strong> Bogdan Cristian Axinte</li>
+                <li><strong>Instituție:</strong> Universitatea "Ștefan cel Mare" din Suceava</li>
+                <li><strong>Program de studii:</strong> Masterat</li>
+                <li><strong>Domeniu:</strong> Securitate Cibernetică</li>
+                <li><strong>Grupa:</strong> 31211a</li>
+            </ul>
+        </div>
+
+        <hr class="my-4">
+
+        <h5 class="fw-bold text-dark mb-3">Despre Proiect</h5>
         <p class="text-muted mb-4">Aceasta este o aplicație web dezvoltată cu Python (FastAPI) pe partea de backend și HTML/CSS/JS pe partea de frontend. Proiectul a fost implementat pentru a demonstra capacitatea de a construi un API robust, protejat prin token-uri JWT, conectat la o bază de date SQLite și publicat pe platforma Render.</p>
         
         <h5 class="fw-bold text-dark mb-3">Tehnologii folosite:</h5>
@@ -48,10 +59,9 @@
         window.location.href = "/";
     }
 
-    // Verificăm logarea imediat ce pagina se încarcă
+    // Verificăm logarea
     document.addEventListener("DOMContentLoaded", () => {
         const butonDeconectare = document.getElementById("btn-deconectare");
-        // Dacă nu există token, ascundem butonul
         if (!localStorage.getItem("token")) {
             butonDeconectare.style.display = "none";
         }

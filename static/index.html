@@ -11,7 +11,6 @@
 
 <nav class="navbar navbar-expand navbar-dark bg-dark shadow-sm">
     <div class="container">
-        
         <div class="d-flex align-items-center me-auto">
             <a class="nav-link text-white me-3" href="/acasa.html">Acasă</a>
             <a class="nav-link text-white me-3" href="/sarcini.html">Sarcini</a>
@@ -23,7 +22,6 @@
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-5">
-            <!-- Formular Înregistrare -->
             <div id="form-inregistrare" class="card mb-4 d-none">
                 <div class="card-body p-4">
                     <h4 class="card-title text-center text-primary mb-4">Înregistrare</h4>
@@ -44,7 +42,6 @@
                 </div>
             </div>
 
-            <!-- Formular Autentificare -->
             <div id="form-autentificare" class="card">
                 <div class="card-body p-4">
                     <h4 class="card-title text-center text-primary mb-4">Autentificare</h4>
@@ -70,7 +67,6 @@
 <script>
     const API = "";
     
-    // Verificăm dacă utilizatorul e deja logat, ca să-l trimitem la sarcini
     document.addEventListener("DOMContentLoaded", () => {
         if (localStorage.getItem("token")) {
             window.location.href = "/sarcini.html";
@@ -85,21 +81,33 @@
     async function inregistreaza() {
         const email = document.getElementById("reg-email").value;
         const parola = document.getElementById("reg-parola").value;
+        const divSucces = document.getElementById("succes-inregistrare");
+        const divEroare = document.getElementById("eroare-inregistrare");
+        
+        divSucces.classList.add("d-none");
+        divEroare.classList.add("d-none");
+
         const raspuns = await fetch(`${API}/inregistrare`, {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, parola })
         });
+
         if (raspuns.ok) {
-            alert("Cont creat! Te poți autentifica.");
-            comutaFormular();
+            divSucces.textContent = "Cont creat! Acum te poți autentifica.";
+            divSucces.classList.remove("d-none");
         } else {
-            alert("Eroare la înregistrare. Email-ul există deja.");
+            divEroare.textContent = "Eroare la înregistrare. Email-ul există deja.";
+            divEroare.classList.remove("d-none");
         }
     }
 
     async function autentifica() {
         const email = document.getElementById("auth-email").value;
         const parola = document.getElementById("auth-parola").value;
+        const divEroare = document.getElementById("eroare-autentificare");
+        
+        divEroare.classList.add("d-none");
+
         const date = new URLSearchParams();
         date.append("username", email); date.append("password", parola);
         
@@ -107,10 +115,10 @@
         if (raspuns.ok) {
             const data = await raspuns.json();
             localStorage.setItem("token", data.access_token);
-            // Redirecționare automată către sarcini după logare
             window.location.href = "/sarcini.html";
         } else {
-            alert("Email sau parolă incorecte.");
+            divEroare.textContent = "Email sau parolă incorecte.";
+            divEroare.classList.remove("d-none");
         }
     }
 </script>

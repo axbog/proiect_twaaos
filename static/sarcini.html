@@ -37,6 +37,16 @@
             </div>
 
             <h4 class="text-secondary mb-3">Sarcinile mele</h4>
+            
+            <div class="card p-3 mb-4 shadow-sm border-0">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="doar-nefinalizate" onchange="incarcaSarcini()">
+                    <label class="form-check-label text-muted" for="doar-nefinalizate">
+                        Afișează doar sarcinile nefinalizate
+                    </label>
+                </div>
+            </div>
+
             <div id="lista-sarcini"></div>
         </div>
     </div>
@@ -45,7 +55,6 @@
 <script>
     const API = "";
     
-    // Protecție: Dacă nu are token, îl trimitem la logare (index.html)
     document.addEventListener("DOMContentLoaded", () => {
         if (!localStorage.getItem("token")) {
             window.location.href = "/";
@@ -61,8 +70,12 @@
 
     async function incarcaSarcini() {
         const token = localStorage.getItem("token");
+        // Filtrarea integrata in URL
+        const doarNefinalizate = document.getElementById("doar-nefinalizate").checked;
+        const url = doarNefinalizate ? `${API}/sarcini?doar_nefinalizate=true` : `${API}/sarcini`;
+        
         try {
-            const raspuns = await fetch(`${API}/sarcini`, { headers: { "Authorization": `Bearer ${token}` } });
+            const raspuns = await fetch(url, { headers: { "Authorization": `Bearer ${token}` } });
             if (raspuns.status === 401) return deconecteaza();
             const sarcini = await raspuns.json();
             randeazaSarcini(sarcini);

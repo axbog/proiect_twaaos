@@ -2,8 +2,6 @@ body {
     background-color: #f4f7f6;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-
-/* O umbră fină pentru cardurile de sarcini */
 .card {
     border: none;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);

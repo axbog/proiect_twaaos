@@ -22,7 +22,7 @@ load_dotenv()
 SECRET_KEY = os.environ.get("SECRET_KEY", "cheie-dev-de-inlocuit")
 ALGORITHM = os.environ.get("ALGORITHM", "HS256")
 EXPIRARE_TOKEN_MINUTE = int(os.environ.get("EXPIRARE_TOKEN_MINUTE", "30"))
-DATABASE_PATH = os.environ.get("DATABASE_PATH", "sarcini.db")
+DATABASE_PATH = "sarcini.db"
 
 context_parola = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_schema = OAuth2PasswordBearer(tokenUrl="autentificare")

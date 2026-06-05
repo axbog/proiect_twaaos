@@ -11,7 +11,6 @@
 
 <nav class="navbar navbar-expand navbar-dark bg-dark shadow-sm">
     <div class="container">
-        
         <div class="d-flex align-items-center me-auto">
             <a class="nav-link text-white me-3" href="/acasa.html">Acasă</a>
             <a class="nav-link text-white me-3 fw-bold" href="/sarcini.html">Sarcini</a>
@@ -39,11 +38,12 @@
             <h4 class="text-secondary mb-3">Sarcinile mele</h4>
             
             <div class="card p-3 mb-4 shadow-sm border-0">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="doar-nefinalizate" onchange="incarcaSarcini()">
-                    <label class="form-check-label text-muted" for="doar-nefinalizate">
-                        Afișează doar sarcinile nefinalizate
-                    </label>
+                <div class="d-flex gap-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="doar-nefinalizate" onchange="incarcaSarcini()">
+                        <label class="form-check-label text-muted" for="doar-nefinalizate">Doar nefinalizate</label>
+                    </div>
+                    <input type="text" id="cautare-titlu" class="form-control form-control-sm w-50" placeholder="Caută după titlu..." oninput="filtreazaLocal()">
                 </div>
             </div>
 
@@ -54,7 +54,8 @@
 
 <script>
     const API = "";
-    
+    let listaCurenta = []; // Pentru filtrarea locală
+
     document.addEventListener("DOMContentLoaded", () => {
         if (!localStorage.getItem("token")) {
             window.location.href = "/";
@@ -70,39 +71,73 @@
 
     async function incarcaSarcini() {
         const token = localStorage.getItem("token");
-        // Filtrarea integrata in URL
         const doarNefinalizate = document.getElementById("doar-nefinalizate").checked;
         const url = doarNefinalizate ? `${API}/sarcini?doar_nefinalizate=true` : `${API}/sarcini`;
         
         try {
             const raspuns = await fetch(url, { headers: { "Authorization": `Bearer ${token}` } });
             if (raspuns.status === 401) return deconecteaza();
-            const sarcini = await raspuns.json();
-            randeazaSarcini(sarcini);
+            listaCurenta = await raspuns.json();
+            randeazaSarcini(listaCurenta);
         } catch { alert("Eroare de conexiune."); }
     }
 
+    function filtreazaLocal() {
+        const query = document.getElementById("cautare-titlu").value.toLowerCase();
+        const filtrate = listaCurenta.filter(s => s.titlu.toLowerCase().includes(query));
+        randeazaSarcini(filtrate);
+    }
+
     function randeazaSarcini(sarcini) {
-        document.getElementById("contor-sarcini").textContent = `Total: ${sarcini.length}`;
+        const finalizate = sarcini.filter(s => s.finalizata).length;
+        document.getElementById("contor-sarcini").textContent = `${sarcini.length} sarcini / ${finalizate} finalizate`;
+        
         const container = document.getElementById("lista-sarcini");
         if (sarcini.length === 0) {
             container.innerHTML = `<div class="text-muted">Nu ai sarcini adăugate.</div>`;
             return;
         }
         container.innerHTML = sarcini.map(s => `
-            <div class="card border-0 shadow-sm mb-3">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="mb-1 ${s.finalizata ? 'text-decoration-line-through text-muted' : 'text-dark fw-bold'}">${s.titlu}</h6>
-                        <p class="text-muted small mb-0">${s.descriere || ''}</p>
-                    </div>
-                    <div class="d-flex gap-2">
+            <div class="card border-0 shadow-sm mb-3" id="card-${s.id}">
+                <div class="card-body">
+                    <div id="view-${s.id}">
+                        <h6 class="${s.finalizata ? 'text-decoration-line-through text-muted' : 'text-dark fw-bold'}">${s.titlu}</h6>
+                        <p class="text-muted small mb-2">${s.descriere || ''}</p>
+                        <button class="btn btn-sm btn-outline-primary" onclick="pornesteEditare(${s.id})">Editează</button>
                         <button class="btn btn-sm btn-outline-success" onclick="finalizeazaSarcina(${s.id})" ${s.finalizata ? 'disabled' : ''}>✓</button>
                         <button class="btn btn-sm btn-outline-danger" onclick="stergeSarcina(${s.id})">✕</button>
+                    </div>
+                    <div id="edit-${s.id}" class="d-none">
+                        <input type="text" id="edit-titlu-${s.id}" class="form-control mb-2" value="${s.titlu}">
+                        <textarea id="edit-desc-${s.id}" class="form-control mb-2">${s.descriere || ''}</textarea>
+                        <button class="btn btn-sm btn-primary" onclick="salveazaEditare(${s.id})">Salvează</button>
                     </div>
                 </div>
             </div>
         `).join("");
+    }
+
+    function pornesteEditare(id) {
+        document.getElementById(`view-${id}`).classList.add('d-none');
+        document.getElementById(`edit-${id}`).classList.remove('d-none');
+    }
+
+    async function salveazaEditare(id) {
+        const titlu = document.getElementById(`edit-titlu-${id}`).value;
+        const descriere = document.getElementById(`edit-desc-${id}`).value;
+        await fetch(`${API}/sarcini/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("token")}` },
+            body: JSON.stringify({ titlu, descriere })
+        });
+        incarcaSarcini();
+    }
+
+    async function stergeSarcina(id) {
+        if (confirm("Ești sigur că vrei să ștergi această sarcină?")) {
+            await fetch(`${API}/sarcini/${id}`, { method: "DELETE", headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }});
+            incarcaSarcini();
+        }
     }
 
     async function adaugaSarcina() {
@@ -121,11 +156,6 @@
 
     async function finalizeazaSarcina(id) {
         await fetch(`${API}/sarcini/${id}/finalizeaza`, { method: "PATCH", headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }});
-        incarcaSarcini();
-    }
-
-    async function stergeSarcina(id) {
-        await fetch(`${API}/sarcini/${id}`, { method: "DELETE", headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }});
         incarcaSarcini();
     }
 </script>
